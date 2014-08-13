@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+"""
+TODO: Write this missing docstring
+"""
 
 import h5py
 import numpy
@@ -139,9 +142,9 @@ class HDF5Handler(object):
         """
 
         if self.prefix:
-           fulldsetpath = self.prefix+dset_path
+            fulldsetpath = self.prefix+dset_path
         else:
-           fulldsetpath = dset_path
+            fulldsetpath = dset_path
 
         try:
             converter = self.index_converters[fulldsetpath]
@@ -221,11 +224,17 @@ class HDF5Handler(object):
 
     #TODO: a method to easily add a comment to the attrs of a dataset.
     def add_comment(self):
+        """
+        #TODO: write example of how you would like to use this
+        """
         pass
 
     #TODO: an option to enable one of the lossless compression filters
     # supported by h5py: gzip, lzf, szip
     def compress_with(self):
+        """
+        #TODO: write example of how you would like to use this
+        """
         pass
 
 
@@ -326,7 +335,8 @@ def get_ndarray_converter(data):
         return identity
 
     else:
-        raise Exception("{data} could not be converted to ndarray.".format(data))
+        msg = "{data} could not be converted to ndarray.".format(data)
+        raise Exception(msg)
 
 def get_shape(data):
     """
