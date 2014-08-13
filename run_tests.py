@@ -10,9 +10,228 @@ from hdf5handler import HDF5Handler
 from colored import ColoredTextTestRunner
 
 
-class test_HDF5Handler_ndarrays(unittest.TestCase):
+class test_Base(unittest.TestCase):
     def setUp(self):
-        self.Handler = HDF5Handler
+        self.filename = 'test.hdf5'
+
+    def tearDown(self):
+        try:
+            os.remove(self.filename)
+        except OSError:
+            pass
+
+
+class test_file_group_dataset_creation(test_Base):
+    def test_open_hdf5(self):
+        with HDF5Handler(self.filename) as handler:
+            self.assertTrue(os.path.exists(self.filename))
+
+    def test_group_creation(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'grp/dset')
+            self.assertTrue(isinstance(handler.file['grp'], h5py.Group))
+
+    def test_hdf5file_dataset_creation(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'dset')
+            self.assertTrue(isinstance(handler.file['dset'], h5py.Dataset))
+
+    def test_group_and_dataset_creation(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'grp/dset')
+            self.assertTrue(isinstance(handler.file['grp/dset'], h5py.Dataset))
+            self.assertTrue(isinstance(handler.file['grp']['dset'],
+                                       h5py.Dataset))
+
+    def test_group_creation_after_closing(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'grp/dset')
+
+        f = h5py.File(self.filename)
+        self.assertTrue(isinstance(f['grp'], h5py.Group))
+
+    def test_hdf5file_dataset_creation_after_closing(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'dset')
+            self.assertTrue(isinstance(handler.file['dset'], h5py.Dataset))
+
+        f = h5py.File(self.filename)
+        self.assertTrue(isinstance(f['dset'], h5py.Dataset))
+
+    def test_group_and_dataset_creation_after_closing(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'grp/dset')
+
+        f = h5py.File(self.filename)
+        self.assertTrue(isinstance(f['grp/dset'], h5py.Dataset))
+        self.assertTrue(isinstance(f['grp']['dset'], h5py.Dataset))
+
+    def test_creation_multiple_datasets(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'testA')
+            handler.put(1, 'testB')
+            handler.put(1, 'testC')
+            self.assertTrue(isinstance(handler.file['testA'], h5py.Dataset))
+            self.assertTrue(isinstance(handler.file['testB'], h5py.Dataset))
+            self.assertTrue(isinstance(handler.file['testC'], h5py.Dataset))
+            self.assertEqual(3, len(handler.file.keys()))
+
+    def test_creation_multiple_datasets_after_closing(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'testA')
+            handler.put(1, 'testB')
+            handler.put(1, 'testC')
+
+        f = h5py.File(self.filename)
+        self.assertTrue(isinstance(f['testA'], h5py.Dataset))
+        self.assertTrue(isinstance(f['testB'], h5py.Dataset))
+        self.assertTrue(isinstance(f['testC'], h5py.Dataset))
+        self.assertEqual(3, len(f.keys()))
+
+
+class test_python_scalars(test_Base):
+    def test_ints(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1, 'testint')
+            handler.put(1, 'testint')
+            handler.put(1, 'testint')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(3, f['testint'].value.sum())
+
+    def test_floats(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(1.1, 'testfloat')
+            handler.put(1.1, 'testfloat')
+            handler.put(1.1, 'testfloat')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(3.3, f['testfloat'].value.sum(), places=7)
+
+    def test_bools(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(True, 'testbool')
+            handler.put(True, 'testbool')
+            handler.put(False, 'testbool')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(2, f['testbool'].value.sum())
+
+
+class test_python_lists(test_Base):
+    def test_list_bool(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put([True, True, True], 'list')
+            handler.put([True, True, True], 'list')
+            handler.put([True, True, False], 'list')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(8, f['list'].value.sum())
+
+    def test_list_integer(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put([1, 1, 1], 'list')
+            handler.put([1, 1, 1], 'list')
+            handler.put([1, 1, 0], 'list')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(8, f['list'].value.sum())
+
+    def test_list_float(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put([1.1, 1.1, 1.1], 'list')
+            handler.put([1.1, 1.1, 1.1], 'list')
+            handler.put([1.1, 1.1, 1.1], 'list')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(9.9, f['list'].value.sum(), places=7)
+
+    def test_list_nested_bool(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put([[True], [True], [True]], 'list')
+            handler.put([[True], [True], [True]], 'list')
+            handler.put([[True], [True], [False]], 'list')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(8, f['list'].value.sum())
+
+    def test_list_nested_integer(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put([[1], [1], [1]], 'list')
+            handler.put([[1], [1], [1]], 'list')
+            handler.put([[1], [1], [0]], 'list')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(8, f['list'].value.sum())
+
+    def test_list_nested_float(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put([[1.1], [1.1], [1.1]], 'list')
+            handler.put([[1.1], [1.1], [1.1]], 'list')
+            handler.put([[1.1], [1.1], [0.1]], 'list')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(8.9, f['list'].value.sum(), places=7)
+
+
+class test_python_tuples(test_Base):
+    def test_tuple_bool(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put((True, True, True), 'tup')
+            handler.put((True, True, True), 'tup')
+            handler.put((True, True, False), 'tup')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(8, f['tup'].value.sum())
+
+    def test_tuple_list(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put((1, 1, 1), 'tup')
+            handler.put((1, 1, 1), 'tup')
+            handler.put((1, 1, 0), 'tup')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(8, f['tup'].value.sum())
+
+    def test_tuple_float(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put((1.1, 1.1, 1.1), 'tup')
+            handler.put((1.1, 1.1, 1.1), 'tup')
+            handler.put((1.1, 1.1, 1.1), 'tup')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(9.9, f['tup'].value.sum(), places=7)
+
+    def test_tuple_nested_bool(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(((True,), (True,), (True,)), 'tup')
+            handler.put(((True,), (True,), (True,)), 'tup')
+            handler.put(((True,), (True,), (False,)), 'tup')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(8, f['tup'].value.sum())
+
+    def test_tuple_nested_integer(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(((1,), (1,), (1,)), 'tup')
+            handler.put(((1,), (1,), (1,)), 'tup')
+            handler.put(((1,), (1,), (0,)), 'tup')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(8, f['tup'].value.sum())
+
+    def test_tuple_nested_float(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(((1.1,), (1.1,), (1.1,)), 'tup')
+            handler.put(((1.1,), (1.1,), (1.1,)), 'tup')
+            handler.put(((1.1,), (1.1,), (0.1,)), 'tup')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(8.9, f['tup'].value.sum(), places=7)
+
+
+class test_ndarrays(unittest.TestCase):
+    def setUp(self):
         self.filename = 'test.hdf5'
 
         self.ints1d = numpy.ones(12345*2)
@@ -25,266 +244,7 @@ class test_HDF5Handler_ndarrays(unittest.TestCase):
         self.sumints = numpy.sum(self.ints)
         self.sumfloats = numpy.sum(self.floats)
 
-        #TODO: write a benchmark module to test different shapes
-        # and show that good choice of chunksize can make a big performance
-        # difference.
         self.kwargs = dict(chunksize=1000, blockfactor=100) #choose wisely!
-
-    def test_group_creation(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'testgroup/testset')
-            self.assertTrue( isinstance(h.file['testgroup'], h5py.Group) )
-
-    def test_hdf5file_dataset_creation(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'test')
-            self.assertTrue(isinstance(h.file['test'], h5py.Dataset))
-
-    def test_group_and_dataset_creation(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row,'testgroup/testset')
-            self.assertTrue( isinstance(h.file['testgroup/testset'], h5py.Dataset) )
-            self.assertTrue( isinstance(h.file['testgroup']['testset'], h5py.Dataset) )
-
-    def test_group_creation_after_closing(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'testgroup/testset')
-
-        f = h5py.File(self.filename)
-        self.assertTrue( isinstance(f['testgroup'], h5py.Group) )
-
-    def test_hdf5file_dataset_creation_after_closing(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'test')
-            self.assertTrue(isinstance(h.file['test'], h5py.Dataset))
-
-        f = h5py.File(self.filename)
-        self.assertTrue( isinstance(f['test'], h5py.Dataset) )
-
-    def test_group_and_dataset_creation_after_closing(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row,'testgroup/testset')
-
-        f = h5py.File(self.filename)
-        self.assertTrue( isinstance(f['testgroup/testset'], h5py.Dataset) )
-        self.assertTrue( isinstance(f['testgroup']['testset'], h5py.Dataset) )
-
-    def test_creation_multiple_datasets(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'testA')
-                h.put(row, 'testB')
-                h.put(row, 'testC')
-            self.assertTrue(isinstance(h.file['testA'], h5py.Dataset) )
-            self.assertTrue(isinstance(h.file['testB'], h5py.Dataset) )
-            self.assertTrue(isinstance(h.file['testC'], h5py.Dataset) )
-            self.assertEqual(3, len(h.file.keys()) )
-
-    def test_creation_multiple_datasets_after_closing(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'testA')
-                h.put(row, 'testB')
-                h.put(row, 'testC')
-
-        f = h5py.File(self.filename)
-        self.assertTrue(isinstance(f['testA'], h5py.Dataset) )
-        self.assertTrue(isinstance(f['testB'], h5py.Dataset) )
-        self.assertTrue(isinstance(f['testC'], h5py.Dataset) )
-        self.assertEqual(3, len(f.keys()) )
-
-    def test_flushbuffers(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertEqual(self.sumints, f['test'].value.sum())
-
-    def test_trimming(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertEqual(self.ints.shape, f['test'].shape)
-
-    def test_flushbuffers_and_trim(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertEqual(self.sumints, f['test'].value.sum())
-        self.assertEqual(self.ints.shape, f['test'].shape)
-
-    def test_shape_scalars(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints1d:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertEqual(self.ints1d.shape, f['test'].shape)
-
-    def test_shape_arrays(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertEqual(self.ints.shape, f['test'].shape)
-
-
-    #####################   Value tests  ####################
-
-    def test_sum_ints_scalar(self):
-        with self.Handler(self.filename) as h:
-            for element in self.ints1d:
-                h.put(element, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertEqual(self.sumints1d, f['test'].value.sum())
-
-    def test_sum_flts_scalar_almostequal7(self):
-        with self.Handler(self.filename) as h:
-            for element in self.floats1d:
-                h.put(element, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(), places=7)
-
-    def test_sum_flts_scalar_almostequal6(self):
-        with self.Handler(self.filename) as h:
-            for element in self.floats1d:
-                h.put(element, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(), places=6)
-
-    def test_sum_flts_scalar_almostequal5(self):
-        with self.Handler(self.filename) as h:
-            for element in self.floats1d:
-                h.put(element, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(), places=5)
-
-
-    def test_sum_flts_scalar_almostequal4(self):
-        with self.Handler(self.filename) as h:
-            for element in self.floats1d:
-                h.put(element, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(), places=4)
-
-
-    def test_sum_flts_scalar_almostequal3(self):
-        with self.Handler(self.filename) as h:
-            for element in self.floats1d:
-                h.put(element, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(), places=3)
-
-
-    def test_sum_flts_scalar_almostequal2(self):
-        with self.Handler(self.filename) as h:
-            for element in self.floats1d:
-                h.put(element, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(), places=2)
-
-
-    def test_sum_flts_scalar_almostequal1(self):
-        with self.Handler(self.filename) as h:
-            for element in self.floats1d:
-                h.put(element, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(), places=1)
-
-
-    def test_sum_ints_array(self):
-        with self.Handler(self.filename) as h:
-            for row in self.ints:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertEqual(self.sumints, f['test'].value.sum())
-
-    def test_sum_flts_array_almostequal7(self):
-        with self.Handler(self.filename) as h:
-            for row in self.floats:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=7)
-
-    def test_sum_flts_array_almostequal6(self):
-        with self.Handler(self.filename) as h:
-            for row in self.floats:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=6)
-
-    def test_sum_flts_array_almostequal5(self):
-        with self.Handler(self.filename) as h:
-            for row in self.floats:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=5)
-
-    def test_sum_flts_array_almostequal4(self):
-        with self.Handler(self.filename) as h:
-            for row in self.floats:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=4)
-
-    def test_sum_flts_array_almostequal3(self):
-        with self.Handler(self.filename) as h:
-            for row in self.floats:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=3)
-
-    def test_sum_flts_array_almostequal2(self):
-        with self.Handler(self.filename) as h:
-            for row in self.floats:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=2)
-
-    def test_sum_flts_array_almostequal1(self):
-        with self.Handler(self.filename) as h:
-            for row in self.floats:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=1)
-
-    def test_prefix(self):
-        with self.Handler(self.filename) as h:
-            h.prefix = 'prefix/'
-            for row in self.ints:
-                h.put(row, 'test')
-
-        f = h5py.File(self.filename)
-        self.assertEqual(self.sumints, f['prefix/test'].value.sum())
-
 
     def tearDown(self):
         try:
@@ -293,11 +253,137 @@ class test_HDF5Handler_ndarrays(unittest.TestCase):
             pass
 
 
+    def test_flushbuffers(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.ints:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(self.sumints, f['test'].value.sum())
+
+    def test_trimming(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.ints:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(self.ints.shape, f['test'].shape)
+
+    def test_flushbuffers_and_trim(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.ints:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(self.sumints, f['test'].value.sum())
+        self.assertEqual(self.ints.shape, f['test'].shape)
+
+    def test_shape_scalars(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.ints1d:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(self.ints1d.shape, f['test'].shape)
+
+    def test_shape_arrays(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.ints:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(self.ints.shape, f['test'].shape)
+
+
+    #####################   Value tests  ####################
+
+    def test_sum_ints_scalar(self):
+        with HDF5Handler(self.filename) as handler:
+            for element in self.ints1d:
+                handler.put(element, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(self.sumints1d, f['test'].value.sum())
+
+    def test_sum_flts_scalar_almostequal6(self):
+        with HDF5Handler(self.filename) as handler:
+            for element in self.floats1d:
+                handler.put(element, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(),
+                               places=6)
+
+    def test_sum_flts_scalar_almostequal4(self):
+        with HDF5Handler(self.filename) as handler:
+            for element in self.floats1d:
+                handler.put(element, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(),
+                               places=4)
+
+    def test_sum_flts_scalar_almostequal2(self):
+        with HDF5Handler(self.filename) as handler:
+            for element in self.floats1d:
+                handler.put(element, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(self.sumfloats1d, f['test'].value.sum(),
+                               places=2)
+
+    def test_sum_ints_array(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.ints:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(self.sumints, f['test'].value.sum())
+
+    def test_sum_flts_array_almostequal6(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.floats:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=6)
+
+    def test_sum_flts_array_almostequal4(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.floats:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=4)
+
+    def test_sum_flts_array_almostequal2(self):
+        with HDF5Handler(self.filename) as handler:
+            for row in self.floats:
+                handler.put(row, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(self.sumfloats, f['test'].value.sum(), places=2)
+
+
+class test_prefix(test_Base):
+    def test_prefix(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.prefix = 'prefix/'
+            for value in range(10):
+                handler.put(value, 'test')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(45, f['prefix/test'].value.sum())
+
+
+class test_shapes(test_Base):
+    pass
+    #TODO: test for correct shapes, when using nested lists/tuples
 
 
 def get_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v','--verbosity', type=int,  default=2, metavar="default: 2")
+    parser.add_argument('-v','--verbosity', type=int, default=2)
     args = parser.parse_args()
     return args
 
@@ -305,7 +391,12 @@ if __name__ == "__main__":
     args = get_arguments()
 
     test_cases = [\
-                  test_HDF5Handler_ndarrays,
+                  test_file_group_dataset_creation,
+                  test_python_scalars,
+                  test_python_lists,
+                  test_python_tuples,
+                  test_ndarrays,
+                  test_prefix,
                  ]
 
     loader = unittest.TestLoader()
