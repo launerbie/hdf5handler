@@ -409,7 +409,7 @@ if __name__ == "__main__":
     runner = ColoredTextTestRunner(verbosity=args.verbosity)
     results = runner.run(suite)
 
-    if len(results.failures) > 0:
+    if len(results.failures) or len(results.errors)> 0:
         exit(1)
     else:
         exit(0)
