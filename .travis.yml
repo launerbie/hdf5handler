@@ -1,14 +1,15 @@
 language: python
 
 python:
+    - "2.6"
     - "2.7"
 #    - "3.2"
     - "3.3"
 
 
 before_install:
-    - sudo apt-get update
-    - sudo apt-get install libhdf5-serial-dev hdf5-tools
+#    - sudo apt-get update
+#    - sudo apt-get install libhdf5-serial-dev hdf5-tools
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
@@ -21,8 +22,6 @@ install:
 
 # # command to run tests, e.g. python setup.py test
 script:
-#    - ./do_nothing.sh
-    - echo $PWD
     - "python run_tests.py"
 
 notifications:
