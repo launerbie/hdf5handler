@@ -373,7 +373,7 @@ class test_prefix(test_Base):
                 handler.put(value, 'test')
 
         f = h5py.File(self.filename)
-        self.assertEqual(44, f['prefix/test'].value.sum())
+        self.assertEqual(45, f['prefix/test'].value.sum())
 
 
 class test_shapes(test_Base):
@@ -409,7 +409,7 @@ if __name__ == "__main__":
     runner = ColoredTextTestRunner(verbosity=args.verbosity)
     results = runner.run(suite)
 
-    if len(results.failures) or len(results.errors)> 0:
+    if (len(results.failures) or len(results.errors)) > 0:
         exit(1)
     else:
         exit(0)
