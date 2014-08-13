@@ -410,8 +410,8 @@ if __name__ == "__main__":
     results = runner.run(suite)
 
     if len(results.failures) > 0:
-        exit(0)
-    else:
         exit(1)
+    else:
+        exit(0)
 
 
