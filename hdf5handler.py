@@ -61,14 +61,9 @@ class HDF5Handler(object):
             ├── lists
             └── scalars
 
-    So in some way, Dataset and Groups are quite analogous to Files and Folders.
-
+    So Datasets and Groups are quite analogous to Files and Folders.
 
     #TODO: open mydata.hdf5 and show it indeed contains the data.
-
-
-
-
 
     """
 
