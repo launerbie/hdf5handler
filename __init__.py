@@ -310,7 +310,7 @@ def get_ndarray_converter(data):
 
     Parameters
     ----------
-    data: any valid data format. See HDF5Handler.__doc__
+    data: any valid data format. See HDF5Handler.put.__doc__
 
     Return
     ------
@@ -342,7 +342,7 @@ def get_shape(data):
     """
     Parameters
     ----------
-    data: any valid data format. See HDF5Handler.__doc__
+    data: any valid data format. See HDF5Handler.put.__doc__
 
     Return
     ------
