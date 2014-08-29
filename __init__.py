@@ -336,7 +336,7 @@ def get_ndarray_converter(data):
 
     else:
         t = type(data)
-        msg = "type(data)={} could not be converted to ndarray. ".format(t)
+        msg = "type {} could not be converted to ndarray. ".format(t)
         raise Exception(msg)
 
 def get_shape(data):

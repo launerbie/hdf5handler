@@ -108,7 +108,6 @@ class test_python_scalars(test_Base):
         f = h5py.File(self.filename)
         self.assertAlmostEqual(3.3, f['testfloat'].value.sum(), places=7)
 
-    @unittest.expectedFailure
     def test_bools(self):
         with HDF5Handler(self.filename) as handler:
             handler.put(True, 'testbool')
@@ -120,7 +119,6 @@ class test_python_scalars(test_Base):
 
 
 class test_python_lists(test_Base):
-    @unittest.expectedFailure
     def test_list_bool(self):
         with HDF5Handler(self.filename) as handler:
             handler.put([True, True, True], 'list')
@@ -148,7 +146,6 @@ class test_python_lists(test_Base):
         f = h5py.File(self.filename)
         self.assertAlmostEqual(9.9, f['list'].value.sum(), places=7)
 
-    @unittest.expectedFailure
     def test_list_nested_bool(self):
         with HDF5Handler(self.filename) as handler:
             handler.put([[True], [True], [True]], 'list')
@@ -178,7 +175,6 @@ class test_python_lists(test_Base):
 
 
 class test_python_tuples(test_Base):
-    @unittest.expectedFailure
     def test_tuple_bool(self):
         with HDF5Handler(self.filename) as handler:
             handler.put((True, True, True), 'tup')
@@ -206,7 +202,6 @@ class test_python_tuples(test_Base):
         f = h5py.File(self.filename)
         self.assertAlmostEqual(9.9, f['tup'].value.sum(), places=7)
 
-    @unittest.expectedFailure
     def test_tuple_nested_bool(self):
         with HDF5Handler(self.filename) as handler:
             handler.put(((True,), (True,), (True,)), 'tup')
@@ -233,6 +228,25 @@ class test_python_tuples(test_Base):
 
         f = h5py.File(self.filename)
         self.assertAlmostEqual(8.9, f['tup'].value.sum(), places=7)
+
+class test_numpy_scalars(test_Base):
+    def test_ints(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(numpy.int64(1), 'testint')
+            handler.put(numpy.int64(1), 'testint')
+            handler.put(numpy.int64(1), 'testint')
+
+        f = h5py.File(self.filename)
+        self.assertEqual(3, f['testint'].value.sum())
+
+    def test_floats(self):
+        with HDF5Handler(self.filename) as handler:
+            handler.put(numpy.float64(1.1), 'testfloat')
+            handler.put(numpy.float64(1.1), 'testfloat')
+            handler.put(numpy.float64(1.1), 'testfloat')
+
+        f = h5py.File(self.filename)
+        self.assertAlmostEqual(3.3, f['testfloat'].value.sum(), places=7)
 
 
 class test_ndarrays(unittest.TestCase):
@@ -400,6 +414,7 @@ if __name__ == "__main__":
                   test_python_scalars,
                   test_python_lists,
                   test_python_tuples,
+                  test_numpy_scalars,
                   test_ndarrays,
                   test_prefix,
                  ]
