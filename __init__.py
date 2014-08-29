@@ -331,11 +331,12 @@ def get_ndarray_converter(data):
     elif isinstance(data, (list, tuple)):
         return numpy.array
 
-    elif isinstance(data, (int, float, bool)):
+    elif isinstance(data, (int, float, bool, numpy.number)):
         return identity
 
     else:
-        msg = "{data} could not be converted to ndarray.".format(data)
+        t = type(data)
+        msg = "type {} could not be converted to ndarray. ".format(t)
         raise Exception(msg)
 
 def get_shape(data):
