@@ -331,7 +331,7 @@ def get_ndarray_converter(data):
     elif isinstance(data, (list, tuple)):
         return numpy.array
 
-    elif isinstance(data, (int, float, bool)):
+    elif isinstance(data, (int, float, bool, numpy.number)):
         return identity
 
     else:
