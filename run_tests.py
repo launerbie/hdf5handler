@@ -6,7 +6,7 @@ import os
 import h5py
 import numpy
 
-from __init__ import HDF5Handler
+from hdf5handler import HDF5Handler
 from colored import ColoredTextTestRunner
 
 
