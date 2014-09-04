@@ -20,7 +20,7 @@ install:
 
 # # command to run tests, e.g. python setup.py test
 script:
-    - "python tests.py"
+    - "python run_tests.py"
 
 notifications:
   email: false
