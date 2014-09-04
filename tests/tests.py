@@ -6,8 +6,8 @@ import os
 import h5py
 import numpy
 
-from hdf5handler import HDF5Handler
-from colored import ColoredTextTestRunner
+from ..core.handler import HDF5Handler
+from ..colored import ColoredTextTestRunner
 
 
 class test_Base(unittest.TestCase):
@@ -405,15 +405,7 @@ class test_shapes(test_Base):
     #TODO: test for correct shapes, when using nested lists/tuples
 
 
-def get_arguments():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-v','--verbosity', type=int, default=2)
-    args = parser.parse_args()
-    return args
-
-if __name__ == "__main__":
-    args = get_arguments()
-
+def run(verbositylvl=2):
     test_cases = [\
                   test_file_group_dataset_creation,
                   test_python_scalars,
@@ -431,12 +423,10 @@ if __name__ == "__main__":
         tests = loader.loadTestsFromTestCase(tc)
         suite.addTests(tests)
 
-    runner = ColoredTextTestRunner(verbosity=args.verbosity)
+    runner = ColoredTextTestRunner(verbosity=verbositylvl)
     results = runner.run(suite)
 
-    if (len(results.failures) or len(results.errors)) > 0:
-        exit(1)
-    else:
-        exit(0)
+    return results
+
 
 
