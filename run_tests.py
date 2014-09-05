@@ -2,6 +2,8 @@
 import argparse
 import os
 import sys
+import unittest
+import importlib
 
 def get_arguments():
     parser = argparse.ArgumentParser()
@@ -9,23 +11,34 @@ def get_arguments():
     args = parser.parse_args()
     return args
 
-if __name__ == "__main__" and __package__ == "hdf5handler":
-    from .tests import tests
-    tests.run()
-
-elif __name__ == "__main__" and __package__ is None:
+if __name__ == "__main__" and __package__ is None:
     ARGS = get_arguments()
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-    import hdf5handler
-    __package__ = "hdf5handler"
+    # __file__ = "run_tests.py"
+    SCRIPT_PATH = os.path.realpath(__file__)   # "/some/path/to/mypackage/run_tests.py"
+    PACKAGE_DIR = os.path.dirname(SCRIPT_PATH) # "/some/path/to/mypackage"
+    PARENT_PACKAGE_DIR, PACKAGE_NAME = os.path.split(PACKAGE_DIR) #("/some/path/to", "mypackage")
 
-    from .tests import tests
-    results = tests.run(verbositylvl=ARGS.verbosity)
+    #append the directory above the package-directory to PYTHONPATH
+    sys.path.append(PARENT_PACKAGE_DIR)
+
+    hdf5handler = importlib.import_module(PACKAGE_NAME)
+    __package__ = PACKAGE_NAME
+
+    from hdf5handler.tests import tests
+    from hdf5handler.colored import ColoredTextTestRunner
+
+    loader = unittest.TestLoader()
+    suite = loader.loadTestsFromModule(tests)
+
+    runner = ColoredTextTestRunner(verbosity=2)
+    results = runner.run(suite)
 
     if (len(results.failures) or len(results.errors)) > 0:
         exit(1)
     else:
         exit(0)
+
+
 
 
