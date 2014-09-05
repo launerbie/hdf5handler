@@ -404,18 +404,17 @@ class test_shapes(test_Base):
     pass
     #TODO: test for correct shapes, when using nested lists/tuples
 
+test_cases = [\
+              test_file_group_dataset_creation,
+              test_python_scalars,
+              test_python_lists,
+              test_python_tuples,
+              test_numpy_scalars,
+              test_ndarrays,
+              test_prefix,
+             ]
 
 def run(verbositylvl=2):
-    test_cases = [\
-                  test_file_group_dataset_creation,
-                  test_python_scalars,
-                  test_python_lists,
-                  test_python_tuples,
-                  test_numpy_scalars,
-                  test_ndarrays,
-                  test_prefix,
-                 ]
-
     loader = unittest.TestLoader()
     suite = unittest.TestSuite()
 
