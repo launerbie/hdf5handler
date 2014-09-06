@@ -239,6 +239,7 @@ class HDF5Handler(object):
 
 
 class Dataset(object):
+    """ TODO: write docstring"""
     def __init__(self, dset):
         """
         Parameters
@@ -283,6 +284,10 @@ class Dataset(object):
             pass #wait till dbuffer is 'full'
 
     def flush(self, trim=True):
+        """
+        Flushes the dbuffer, i.e. writes arrays in the dbuffer and resizes the
+        dataset.
+        """
         dbuffer = self.dbuffer
 
         dbuffer_ndarray = numpy.array(dbuffer)
@@ -320,10 +325,11 @@ def get_ndarray_converter(data):
     try:
         numpy.array(data)/1.0
     except TypeError:
-        raise Exception("{data} contains non-numeric objects.".format(data))
+        raise Exception("{} contains non-numeric objects.".format(data))
 
-    def identity(x):
-        return x
+    def identity(data):
+        """ The identity function."""
+        return data
 
     if isinstance(data, numpy.ndarray):
         return identity
@@ -335,8 +341,7 @@ def get_ndarray_converter(data):
         return identity
 
     else:
-        t = type(data)
-        msg = "type {} could not be converted to ndarray. ".format(t)
+        msg = "type {} could not be converted to ndarray. ".format(type(data))
         raise Exception(msg)
 
 def get_shape(data):
