@@ -93,7 +93,10 @@ class HDF5Handler(object):
         self.index_converters = dict()
 
     def __enter__(self):
-        self.file = h5py.File(self.filename, self.mode)
+        # According to h5py docs, libver='latest' is specified for potential
+        # performance advantages procured by maximum file structure
+        # sophistication. (Could also mean losing some backwards compatibility)
+        self.file = h5py.File(self.filename, self.mode, libver='latest')
         return self
 
     def __exit__(self, extype, exvalue, traceback):
