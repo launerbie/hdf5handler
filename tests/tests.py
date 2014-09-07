@@ -1,14 +1,11 @@
 #!/usr/bin/env python
 
 import unittest
-import argparse
 import os
 import h5py
 import numpy
 
 from ..core.handler import HDF5Handler
-from ..colored import ColoredTextTestRunner
-
 
 class test_Base(unittest.TestCase):
     def setUp(self):
