@@ -92,6 +92,7 @@ class HDF5Handler(object):
         self.index = dict()
         self.index_converters = dict()
 
+
     def __enter__(self):
         # According to h5py docs, libver='latest' is specified for potential
         # performance advantages procured by maximum file structure
@@ -103,6 +104,15 @@ class HDF5Handler(object):
         self.flushbuffers()
         self.file.close()
         return False
+
+    #TODO; how to avoid code replication here?
+    def open(self):
+        self.file = h5py.File(self.filename, self.mode, libver='latest')
+
+    #TODO; how to avoid code replication here?
+    def close(self):
+        self.flushbuffers()
+        self.file.close()
 
     def put(self, data, dset_path, **kwargs):
         """
