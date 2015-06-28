@@ -5,7 +5,7 @@ import os
 import h5py
 import numpy
 
-from ..core.handler import HDF5Handler
+from hdf5handler import HDF5Handler
 
 class test_Base(unittest.TestCase):
     def setUp(self):

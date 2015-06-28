@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-
-from setuptools import setup
-
 import os
 from setuptools import setup, Command
 
@@ -19,11 +16,30 @@ class CleanCommand(Command):
         os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info \
                   ./hdf5handler/__pycache__')
 
+class TestCommand(Command):
+    description = "run all tests"
+    user_options = [] # distutils complains if this is not here.
+
+    def __init__(self, *args):
+        self.args = args[0]
+        Command.__init__(self, *args)
+
+    def initialize_options(self):  # distutils wants this
+        pass
+
+    def finalize_options(self):    # this too
+        pass
+
+    def run(self):
+        from hdf5handler.tests import runtests
+        runtests.run_all_tests()
+
 
 setup(
     name = "hdf5handler",
     version = "0.0.1",
     packages = ['hdf5handler'],
-    cmdclass = {'clean': CleanCommand}
+    cmdclass = {'clean': CleanCommand,
+                'test': TestCommand,}
 )
 
