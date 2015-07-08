@@ -28,9 +28,12 @@ complex128   Complex number, represented by two 64-bit floats (real and imaginar
 
 #Note: not all of the above types have been tested.
 
+import h5py
 from hdf5handler import HDF5Handler
 
-with HDF5Handler('alotofdata.h5', 'w') as h:
+FILENAME = 'alotofdata.h5'
+
+with HDF5Handler(FILENAME, 'w') as h:
     for i in range(200):
         h.put(i, 'default')
 
@@ -53,6 +56,16 @@ with HDF5Handler('alotofdata.h5', 'w') as h:
         h.put(i, 'myfloat64', dtype='float64')
 
 # Exiting the context manager will close the hdf5 file, thus we can now
-# open and
+# open and read the data.
+
+f = h5py.File(FILENAME)
+
+print(list(f.keys()))
+
+for key in f:
+    n = f[key].value
+    print(key, n.dtype, n.shape, n.nbytes, )
+
+
 
 
