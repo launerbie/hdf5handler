@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from core.handler import HDF5Handler
+from hdf5handler import HDF5Handler
 
 handler = HDF5Handler('mydata.hdf5')
 handler.open()
